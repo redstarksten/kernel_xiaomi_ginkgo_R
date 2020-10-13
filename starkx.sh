@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-set +e
 CONFIG=vendor/ginkgo-perf_defconfig
 EXTRA=$HOME/Extra
 START=$(date +"%s")
@@ -55,7 +54,7 @@ function dep() {
 }
 #telegram
 export token="1290161744:AAGMv7NlfFdjRG-OR1L644TU8J8dyqDcfH8"
-export chat_id="-1001470538909"
+export chat_id="-1001169205147"
 export sticker_id="CAACAgUAAxkBAAEBY1BfcfdHj0mZ__wpN2xvPpGAb9VIngACiwAD7OCaHpbj1BCmgcEbGwQ"
 export stickerr_id="CAACAgUAAxkBAAEBYwlfcdkduys5zAvVpek_kvzSSOOXZwACGgADwNuQOaZM4AdxOsmJGwQ"
 export logo=${EXTRA}/logo.jpg
@@ -92,7 +91,13 @@ function stikerr() {
 	curl -s -F chat_id=$chat_id \
 		-F sticker="CAACAgUAAxkBAAEBYwlfcdkduys5zAvVpek_kvzSSOOXZwACGgADwNuQOaZM4AdxOsmJGwQ" https://api.telegram.org/bot$token/sendSticker
 }
-
+#Upload to gdrive
+function upload() {
+	gdrive upload --share $(echo ${SIGNER_DIR}/${ZIPNAME}-signed.zip) | tee ${EXTRA}/link.txt
+	link=$(echo $(cat /home/bukandewa/Extra/link.txt | grep -Eo "(http|https)://[a-zA-Z0-9./?=_%:-]*" | sort -u))
+	rm -rf ${SIGNER_DIR}/*.zip
+	rm -rf ${IMG_DIR}
+}	
 # Push kernel to channel
 function push() {
         echo -e ""
@@ -101,7 +106,6 @@ function push() {
 	echo -e "▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄"
 	echo -e ""
 	./telegram -f ${SIGNER_DIR}/*.zip "Build took $(($DIFF / 60)) minute(s) and $(($DIFF % 60)) second(s)."
-	rm -rf ${SIGNER_DIR}/*.zip
 }
 #send image and caption info
 function image() {
@@ -112,13 +116,18 @@ function image() {
 	echo -e ""
         ./telegram -i $(echo ${logo}) -H -D \
 -T "<b>${KERNEL_NAME}</b> New Update is Coming!
+<b>Beta Support Android R</b>
+
 <b>Build on :</b> <code>${KBUILD_BUILD_USER}-${KBUILD_BUILD_HOST}</code>
 <b>For device :</b> <b>${DEVICE}</b> (Redmi Note 8)
 <b>Kernel Version :</b> <code>${KERNEL_VERSION}</code>
 <b>Using compiler :</b> <code>$CLANG_VERSION</code>
 <b>Started on :</b> <code>$(TZ=Asia/Jakarta date)</code>
+<b>Build took : $(($DIFF / 60)) minute(s) and $(($DIFF % 60)) second(s).</b>
 
-<a href='https://redstarksten.github.io/index.html'>Pages</a> | <a href='https://t.me/StarkXKernel'>Channel</a> | <a href='https://t.me/StarkXOfficial'>Group</a> | <a href='https://github.com/redstarksten/kernel_xiaomi_ginkgo'>Source</a> | <a href='https://redstarksten.github.io/changelog.html'>Changelog</a>"
+<a href='${link}'>Download Here</a>
+
+<a href='https://redstarksten.github.io/index.html'>Pages</a> | <a href='https://t.me/StarkXKernel'>Channel</a> | <a href='https://t.me/StarkXOfficial'>Group</a> | <a href='https://github.com/redstarksten'>Github</a> | <a href='https://redstarksten.github.io/changelog.html'>Changelog</a>"
 }
 # Fin Error
 function finerr() {
@@ -154,10 +163,14 @@ make -j$(nproc --all) O=out \
                       CC=clang \
                       LD=ld.lld \
                       AR=llvm-ar \
+                      AS=llvm-as \
                       NM=llvm-nm \
+                      READELF=llvm-readelf \
+                      OBJSIZE=llvm-size \
                       OBJCOPY=llvm-objcopy \
                       OBJDUMP=llvm-objdump \
                       STRIP=llvm-strip \
+                      CLANG_TRIPLE=aarch64-linux-gnu- \
                       CROSS_COMPILE=aarch64-linux-gnu- \
                       CROSS_COMPILE_ARM32=arm-linux-gnueabi- \
                       Image.gz-dtb
@@ -205,7 +218,7 @@ zipping
 signer
 END=$(date +"%s")
 DIFF=$(($END - $START))
+upload
 image
-push
+#push
 sticker
-set -e
