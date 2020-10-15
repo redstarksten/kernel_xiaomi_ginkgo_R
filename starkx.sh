@@ -13,11 +13,14 @@ ANY_DIR=${EXTRA}/Anykernel
 ANY_IMG=${ANY_DIR}/Image.gz-dtb
 DTB=${KERNEL_DIR}/out/arch/arm64/boot/dts/qcom/*.dtb
 SIGNER_DIR=${EXTRA}/signer
+PAGES_DIR=${EXTRA}/redstarksten.github.io
+LOG_DIR=${PAGES_DIR}/build_log/${tanggal}-log.txt
+log="https://redstarksten.github.io/build_log/${tanggal}-log.txt"
 
-function dep() {
+function check() {
 	echo -e ""
 	echo -e "▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀"
-	echo -e "Download Dependencies..."
+	echo -e "Extra Checker..."
 	echo -e "▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄"
 	echo -e ""
 
@@ -59,12 +62,12 @@ export sticker_id="CAACAgUAAxkBAAEBY1BfcfdHj0mZ__wpN2xvPpGAb9VIngACiwAD7OCaHpbj1
 export stickerr_id="CAACAgUAAxkBAAEBYwlfcdkduys5zAvVpek_kvzSSOOXZwACGgADwNuQOaZM4AdxOsmJGwQ"
 export logo=${EXTRA}/logo.jpg
 #env
-export PATH="$HOME/proton-clang/bin:$PATH"
+export PATH="$HOME/clang/bin:$PATH"
 export ARCH=arm64
 export SUBARCH=arm64
-export KBUILD_BUILD_USER=Ubuntu
+export KBUILD_BUILD_USER=Bukandewa
 export KBUILD_BUILD_HOST=Desktop
-export CLANG_VERSION="$($HOME/proton-clang/bin/clang --version | head -n 1 | perl -pe 's/\((?:http|git).*?\)//gs' | sed -e 's/  */ /g' -e 's/[[:space:]]*$//')"
+export CLANG_VERSION="$($HOME/clang/bin/clang --version | head -n 1 | perl -pe 's/\((?:http|git).*?\)//gs' | sed -e 's/  */ /g' -e 's/[[:space:]]*$//')"
 export PATH="/usr/lib/ccache:$PATH"
 export USE_CCACHE=1
 export CCACHE_DIR="$HOME/.ccache"
@@ -88,25 +91,43 @@ function stikerr() {
 	echo -e "Send sticker error!"  	
 	echo -e "▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄"
 	echo -e ""
-	curl -s -F chat_id=$chat_id \
-		-F sticker="CAACAgUAAxkBAAEBYwlfcdkduys5zAvVpek_kvzSSOOXZwACGgADwNuQOaZM4AdxOsmJGwQ" https://api.telegram.org/bot$token/sendSticker
+	./telegram -s ${stickerr_id}
 }
 #Upload to gdrive
 function upload() {
+	echo -e ""
+	echo -e "▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀"
+	echo -e "Upload to Gdrive Folder...."	
+	echo -e "▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄"
+	echo -e ""
 	gdrive upload --share $(echo ${SIGNER_DIR}/${ZIPNAME}-signed.zip) | tee ${EXTRA}/link.txt
 	link=$(echo $(cat /home/bukandewa/Extra/link.txt | grep -Eo "(http|https)://[a-zA-Z0-9./?=_%:-]*" | sort -u))
 	rm -rf ${SIGNER_DIR}/*.zip
 	rm -rf ${IMG_DIR}
+	rm -rf ${ANY_IMG}
 }	
 # Push kernel to channel
 function push() {
-        echo -e ""
+      	echo -e ""
 	echo -e "▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀"
 	echo -e "Push message to telegram..."  	
 	echo -e "▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄"
 	echo -e ""
 	./telegram -f ${SIGNER_DIR}/*.zip "Build took $(($DIFF / 60)) minute(s) and $(($DIFF % 60)) second(s)."
 }
+#Push build log to github
+function log() {
+	echo -e ""
+	echo -e "▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀"
+	echo -e "Push build log to github"  	
+	echo -e "▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄"
+	echo -e ""
+	cd ~/Extra/redstarksten.github.io
+	git add .
+	git commit -s -S -m "${tanggal} build log"
+	git push && cd ..
+}
+	
 #send image and caption info
 function image() {
 	echo -e ""
@@ -115,29 +136,35 @@ function image() {
 	echo -e "▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄"
 	echo -e ""
         ./telegram -i $(echo ${logo}) -H -D \
--T "<b>${KERNEL_NAME}</b> New Update is Coming!
-<b>Beta Support Android R</b>
+-T "<b>${KERNEL_NAME}</b> New Update!
+<b>Release Date: 15/10/2020</b>
+<b>By @bukandewa</b>
 
+<a href='${link}'>Download</a> | <a href='${log}'>Build log</a> | <a href='https://redstarksten.github.io/changelog.html'>Changelog</a>
+
+<b>Started on :</b> <code>$(TZ=Asia/Jakarta date)</code>
 <b>Build on :</b> <code>${KBUILD_BUILD_USER}-${KBUILD_BUILD_HOST}</code>
-<b>For device :</b> <b>${DEVICE}</b> (Redmi Note 8)
+<b>For device :</b> <b>${DEVICE}</b> (Redmi Note 8/8T)
 <b>Kernel Version :</b> <code>${KERNEL_VERSION}</code>
 <b>Using compiler :</b> <code>$CLANG_VERSION</code>
-<b>Started on :</b> <code>$(TZ=Asia/Jakarta date)</code>
-<b>Build took : $(($DIFF / 60)) minute(s) and $(($DIFF % 60)) second(s).</b>
+<b>Build took $(($DIFF / 60)) minute(s) and $(($DIFF % 60)) second(s).</b>
 
-<a href='${link}'>Download Here</a>
+<a href='https://redstarksten.github.io/index.html'>Pages</a> | <a href='https://t.me/StarkXKernel'>Channel</a> | <a href='https://t.me/StarkXOfficial'>Group</a> | <a href='https://github.com/redstarksten'>Github</a>
 
-<a href='https://redstarksten.github.io/index.html'>Pages</a> | <a href='https://t.me/StarkXKernel'>Channel</a> | <a href='https://t.me/StarkXOfficial'>Group</a> | <a href='https://github.com/redstarksten'>Github</a> | <a href='https://redstarksten.github.io/changelog.html'>Changelog</a>"
+<b>Notes :</b>
+- Just flash then reboot.
+- Encrypted phone status may cause boot failed.
+- If cant boot in MIUI, check your phone encryption status, or try flash permissiver before flash the kernel."
 }
 # Fin Error
 function finerr() {
-        echo -e ""
+      	echo -e ""
 	echo -e "▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀"
 	echo -e "Error!"  	
 	echo -e "▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄"
 	echo -e ""
-        paste
-        curl -X POST "https://api.telegram.org/bot$token/sendMessage" \
+      	paste
+     	curl -X POST "https://api.telegram.org/bot$token/sendMessage" \
 			-d chat_id="$chat_id" \
 			-d "disable_web_page_preview=true" \
 			-d "parse_mode=markdown" \
@@ -151,7 +178,7 @@ function compile() {
 	echo -e "▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄"
 	echo -e ""
 cd out
-make clean && make mrproper && make distclean && cd ..
+make clean && make mrproper && cd ..
         echo -e ""
 	echo -e "▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀"
 	echo -e "Compile kernel process..."  	
@@ -173,12 +200,12 @@ make -j$(nproc --all) O=out \
                       CLANG_TRIPLE=aarch64-linux-gnu- \
                       CROSS_COMPILE=aarch64-linux-gnu- \
                       CROSS_COMPILE_ARM32=arm-linux-gnueabi- \
-                      Image.gz-dtb
+                      Image.gz-dtb | tee ${LOG_DIR}
 
         if ! [[ -a ${IMG_DIR} ]]; then
-                finerr
+              	finerr
 		stikerr
-                exit 1
+              	exit 1
         fi
 }
 # Zipping
@@ -190,7 +217,7 @@ function zipping() {
 	echo -e ""
         if [[ -f ${IMG_DIR} ]]; then
         cat ${IMG_DIR} ${DTB} > ${ANY_IMG}
-        cd ${ANY_DIR}
+        cd /${ANY_DIR}
         zip -r9 unsigned.zip *
         mv unsigned.zip ${SIGNER_DIR} && cd ..
         else
@@ -212,8 +239,9 @@ function signer() {
         echo -e "Failed!"
         fi
 }
-dep
+check
 compile
+log
 zipping
 signer
 END=$(date +"%s")
