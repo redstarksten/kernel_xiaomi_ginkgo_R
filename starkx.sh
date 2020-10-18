@@ -140,7 +140,7 @@ function image() {
 <b>Release Date: 15/10/2020</b>
 <b>By @bukandewa</b>
 
-<a href='${link}'>Download</a> | <a href='${log}'>Build log</a> | <a href='https://redstarksten.github.io/changelog.html'>Changelog</a>
+<a href='${link}'>Download</a> | <a href='https://redstarksten.github.io/changelog.html'>Changelog</a>
 
 <b>Started on :</b> <code>$(TZ=Asia/Jakarta date)</code>
 <b>Build on :</b> <code>${KBUILD_BUILD_USER}-${KBUILD_BUILD_HOST}</code>
@@ -153,8 +153,8 @@ function image() {
 
 <b>Notes :</b>
 - Just flash then reboot.
-- Encrypted phone status may cause boot failed.
-- If cant boot in MIUI, check your phone encryption status, or try flash permissiver before flash the kernel."
+- If not boot on MIUI, please use this <a href='https://drive.google.com/uc?id=15I9uvNLG-YnndBOwpO_eDp8S74OhkQPk&export=download'>MIUI Kernel</a> version."
+
 }
 # Fin Error
 function finerr() {
