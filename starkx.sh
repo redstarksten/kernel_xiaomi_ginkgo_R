@@ -62,7 +62,7 @@ export sticker_id="CAACAgUAAxkBAAEBY1BfcfdHj0mZ__wpN2xvPpGAb9VIngACiwAD7OCaHpbj1
 export stickerr_id="CAACAgUAAxkBAAEBYwlfcdkduys5zAvVpek_kvzSSOOXZwACGgADwNuQOaZM4AdxOsmJGwQ"
 export logo=${EXTRA}/logo.jpg
 #env
-export PATH="$HOME/clang/bin:$PATH"
+export PATH="$HOME/N-clang/bin:$PATH"
 export ARCH=arm64
 export SUBARCH=arm64
 export KBUILD_BUILD_USER=Bukandewa
